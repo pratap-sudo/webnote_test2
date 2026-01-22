@@ -1,0 +1,473 @@
+
+=========================
+FILE: index.html
+=========================
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>pratap indalkar</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
+
+
+=========================
+FILE: src/App.jsx
+=========================
+// -------------------- App.jsx --------------------
+// -------------------- App.jsx --------------------
+import React from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import Register from './components/Register';
+import Login from './components/Login';
+import Dashboard from './components/Dashboard';
+import Home from './components/Home';
+
+function App() {
+  const isLoggedIn = !!localStorage.getItem('token');
+
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/login" element={<Login />} />
+        <Route
+          path="/dashboard"
+          element={isLoggedIn ? <Dashboard /> : <Navigate to="/login" />}
+        />
+      </Routes>
+    </BrowserRouter>
+  );
+}
+
+export default App;
+
+
+=========================
+FILE: src/main.jsx
+=========================
+
+// -------------------- main.jsx --------------------
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+import './index.css';
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+
+
+=========================
+FILE: src/components/Register.jsx
+=========================
+// -------------------- components/Register.jsx --------------------
+import React, { useState } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import './Register.css'; // ✅ Import external CSS
+import Navbar from './Navbar';
+
+function Register() {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({ name: '', email: '', password: '' });
+  const [message, setMessage] = useState('');
+
+  const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.post('http://localhost:5000/api/register', formData);
+      navigate('/login');
+    } catch (err) {
+      setMessage(err.response.data.message);
+    }
+  };
+
+  return (
+    <div>
+      <Navbar />
+      <div className="register-container">
+        
+        <div className="register-box">
+          <h2 className="register-heading">Register</h2>
+          <form onSubmit={handleSubmit} className="register-form">
+            <input
+              name="name"
+              placeholder="Name"
+              onChange={handleChange}
+              className="register-input"
+            />
+            <input
+              name="email"
+              placeholder="Email"
+              onChange={handleChange}
+              className="register-input"
+            />
+            <input
+              type="password"
+              name="password"
+              placeholder="Password"
+              onChange={handleChange}
+              className="register-input"
+            />
+            <button type="submit" className="register-button">Register</button>
+          </form>
+          {message && <p className="register-message">{message}</p>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default Register;
+
+
+=========================
+FILE: src/components/Navbar.jsx
+=========================
+// -------------------- components/Navbar.jsx --------------------
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import './Navbar.css';
+
+function Navbar() {
+  const navigate = useNavigate();
+  const isLoggedIn = !!localStorage.getItem('token');
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [showAbout, setShowAbout] = useState(false);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    navigate('/login');
+  };
+
+  const toggleDropdown = () => {
+    setShowDropdown(!showDropdown);
+  };
+
+  const handleOptionClick = (option) => {
+    setShowDropdown(false);
+    switch (option) {
+      case 'about':
+        setShowAbout(true); // Show the modal instead of alert
+        break;
+      case 'rate':
+        window.open(
+          'https://docs.google.com/forms/d/e/YOUR_RATE_FORM_ID/viewform',
+          '_blank'
+        );
+        break;
+      case 'feedback':
+        window.open(
+          'https://docs.google.com/forms/d/e/YOUR_FEEDBACK_FORM_ID/viewform',
+          '_blank'
+        );
+        break;
+      default:
+        break;
+    }
+  };
+
+  return (
+    <>
+      <nav className="navbar">
+        <h1 className="navbar-title">WebNote</h1>
+        <div className="navbar-links">
+          <Link to="/">Home</Link>
+          {!isLoggedIn && <Link to="/register">Register</Link>}
+          {!isLoggedIn && <Link to="/login">Login</Link>}
+          {isLoggedIn && <Link to="/dashboard">Dashboard</Link>}
+          {isLoggedIn && <button onClick={handleLogout}>Logout</button>}
+
+          {/* More Button and Dropdown */}
+          <div className="more-options">
+            <button className="more-btn" onClick={toggleDropdown}>☰ More</button>
+            {showDropdown && (
+              <div className="dropdown-box">
+                <p onClick={() => handleOptionClick('about')}>About Us</p>
+                <p onClick={() => handleOptionClick('rate')}>Rate Us</p>
+                <p onClick={() => handleOptionClick('feedback')}>Feedback</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </nav>
+
+      {/* About Us Modal */}
+      {showAbout && (
+        <div className="modal-overlay">
+          <div className="modal-box">
+            <h2>About WebNote</h2>
+            <p>
+              WebNote is a secure and user-friendly file management application
+              designed for storing, managing, and accessing your personal files
+              from anywhere. Built with privacy and simplicity in mind.
+            </p>
+            <button onClick={() => setShowAbout(false)}>Close</button>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+export default Navbar;
+
+=========================
+FILE: src/components/Login.jsx
+=========================
+// -------------------- components/Login.jsx --------------------
+import React, { useState } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import './Login.css';
+import Navbar from './Navbar';
+
+
+function Login() {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({ email: '', password: '' });
+  const [message, setMessage] = useState('');
+
+  const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await axios.post('http://localhost:5000/api/login', formData);
+      localStorage.setItem('token', res.data.token);
+      navigate('/dashboard');
+    } catch (err) {
+      setMessage(err.response.data.message);
+    }
+  };
+
+  return (
+    <div>
+      <Navbar />
+      <div className="login-container">
+
+        <h2>Login</h2>
+        <form onSubmit={handleSubmit}>
+          <input name="email" placeholder="Email" onChange={handleChange} /><br />
+          <input type="password" name="password" placeholder="Password" onChange={handleChange} /><br />
+          <button type="submit">Login</button>
+        </form>
+        <p>{message}</p>
+      </div>
+    </div>
+  );
+
+}
+
+export default Login;
+
+
+=========================
+FILE: src/components/Home.jsx
+=========================
+// -------------------- components/Home.jsx --------------------
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import './Home.css';
+import Navbar from './Navbar';
+
+function Home() {
+  const navigate = useNavigate();
+
+  return (
+    <div className="home-container">
+      <Navbar />
+
+      <header className="hero-section">
+        <h1>Welcome to <span className="highlight">WebNote</span></h1>
+        <p>Your secure place to upload, access, and manage your files—anytime, anywhere.</p>
+        <div className="cta-buttons">
+          <button onClick={() => navigate('/register')}>Register</button>
+          <button onClick={() => navigate('/login')}>Login</button>
+        </div>
+      </header>
+
+      <section className="features-section">
+        <h2>Why Choose WebNote?</h2>
+        <div className="features">
+          <div className="feature-card">
+            <h3>🛡️ Secure Uploads</h3>
+            <p>Your files are stored safely, accessible only by you.</p>
+          </div>
+          <div className="feature-card">
+            <h3>☁️ Access Anywhere</h3>
+            <p>Login from any device and manage your files instantly.</p>
+          </div>
+          <div className="feature-card">
+            <h3>⚡ Simple & Fast</h3>
+            <p>No complexity. Just register, login, upload, and go.</p>
+          </div>
+        </div>
+      </section>
+
+      <footer className="footer">
+        <p>© 2025 WebNote. All rights reserved.</p>
+      </footer>
+    </div>
+  );
+}
+
+export default Home;
+
+
+=========================
+FILE: src/components/Dashboard.jsx
+=========================
+// -------------------- components/Dashboard.jsx --------------------
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import './Dashboard.css';
+import Navbar from './Navbar';
+
+
+function Dashboard() {
+  const [files, setFiles] = useState([]);
+  const [file, setFile] = useState(null);
+  const navigate = useNavigate();
+
+  const fetchFiles = async () => {
+    const token = localStorage.getItem('token');
+    const res = await axios.get('http://localhost:5000/api/account', {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    setFiles(res.data.files);
+  };
+
+  const handleUpload = async () => {
+    if (!file) return;
+    const token = localStorage.getItem('token');
+    const formData = new FormData();
+    formData.append('file', file);
+    await axios.post('http://localhost:5000/api/upload', formData, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    fetchFiles();
+  };
+
+  const handleDelete = async (fileUrl) => {
+  const token = localStorage.getItem('token');
+
+  try {
+    await axios.post(
+      'http://localhost:5000/api/delete',
+      { fileUrl },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    fetchFiles();
+  } catch (err) {
+    alert('Error deleting file');
+  }
+};
+
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    navigate('/login');
+  };
+
+  useEffect(() => {
+    fetchFiles();
+  }, []);
+
+  const renderFile = (filePath, index) => {
+    const extension = filePath.split('.').pop().toLowerCase();
+    const fullPath = filePath;
+    const filename = filePath.split('/').pop();
+
+    return (
+      <div key={index} className="file-item">
+        {['jpg', 'jpeg', 'png', 'gif'].includes(extension) ? (
+          <img src={fullPath} alt={filename} />
+        ) : extension === 'pdf' ? (
+          <a href={fullPath} target="_blank" rel="noreferrer" className="file-link">
+            📄
+          </a>
+        ) : (
+          <a href={fullPath} target="_blank" rel="noreferrer" className="file-link">
+            📁
+          </a>
+        )}
+
+        <p className="file-name">{filename}</p>
+
+        <button className="delete-btn" onClick={() => handleDelete(filePath)}>
+          Delete
+        </button>
+      </div>
+    );
+  };
+
+  return (
+    <div className="dashboard-container">
+      <h2>Your Files</h2>
+      <input type="file" onChange={(e) => setFile(e.target.files[0])} />
+      <div className="buttons">
+        <button onClick={handleUpload}>Upload</button>
+        <button onClick={handleLogout}>Logout</button>
+      </div>
+      <div className="files-section">
+        {files.length > 0 ? (
+          files.map((file, index) => renderFile(file, index))
+        ) : (
+          <p>No files uploaded yet.</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default Dashboard;
+
+
+=========================
+FILE: package.json
+=========================
+{
+  "name": "client",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "axios": "^1.11.0",
+    "multer": "^2.0.2",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-router-dom": "^7.7.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.30.1",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
+    "@vitejs/plugin-react": "^4.6.0",
+    "eslint": "^9.30.1",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.20",
+    "globals": "^16.3.0",
+    "vite": "^7.0.4"
+  }
+}
+

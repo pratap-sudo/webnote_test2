@@ -6,13 +6,17 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const filesToInclude = [
-  "models/User.js",
-  "middleware/authMiddleware.js",
-   "controllers/userController.js",
-  
-  "package.json",
-  "routes/userRoutes"
+  "index.html",
+  "src/App.jsx",
+  "src/main.jsx",
+  "src/components/Register.jsx",
+  "src/components/Navbar.jsx",
+  "src/components/Login.jsx",
+  "src/components/Home.jsx",
+  "src/components/Dashboard.jsx",
+  "package.json"
 ];
+
 
 let output = "";
 

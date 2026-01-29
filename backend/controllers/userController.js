@@ -6,10 +6,9 @@ const supabase = require('../config/supabase');
 
 
 exports.registerUser = async (req, res) => {
-  const { name, email, password } = req.body;
-  const hashed = await bcrypt.hash(password, 10);
   try {
-    const user = await User.create({ name, email, password: hashed });
+    const hashed = await bcrypt.hash(req.body.password, 10);
+    await User.create({ name: req.body.name, email: req.body.email, password: hashed });
     res.status(201).json({ message: 'User registered' });
   } catch (err) {
     res.status(400).json({ message: 'Email already exists' });
@@ -17,16 +16,10 @@ exports.registerUser = async (req, res) => {
 };
 
 exports.loginUser = async (req, res) => {
-  const { email, password } = req.body;
-  const user = await User.findOne({ email });
-
+  const user = await User.findOne({ email: req.body.email });
   if (!user) return res.status(404).json({ message: 'User not found' });
-
-  const isMatch = await bcrypt.compare(password, user.password);
-  if (!isMatch) return res.status(401).json({ message: 'Invalid credentials' });
-
-  const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
-  res.json({ token });
+  if (!(await bcrypt.compare(req.body.password, user.password))) return res.status(401).json({ message: 'Invalid credentials' });
+  res.json({ token: jwt.sign({ id: user._id }, process.env.JWT_SECRET) });
 };
 
 exports.getUserFiles = async (req, res) => {
@@ -35,41 +28,14 @@ exports.getUserFiles = async (req, res) => {
 
 exports.uploadFile = async (req, res) => {
   try {
-    if (!req.file) {
-      return res.status(400).json({ message: 'No file uploaded' });
-    }
-
-    const file = req.file;
-
-    // unique filename
-    const fileName = `${Date.now()}-${file.originalname}`;
-    const filePath = `user-${req.user._id}/${fileName}`;
-
-    // upload to Supabase
-    const { error } = await supabase.storage
-      .from('uploads')
-      .upload(filePath, file.buffer, {
-        contentType: file.mimetype
-      });
-
-    if (error) {
-      return res.status(500).json({ message: error.message });
-    }
-
-    // get public URL
-    const { data } = supabase.storage
-      .from('uploads')
-      .getPublicUrl(filePath);
-
-    // save URL in MongoDB
+    if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
+    const filePath = `user-${req.user._id}/${Date.now()}-${req.file.originalname}`;
+    const { error } = await supabase.storage.from('uploads').upload(filePath, req.file.buffer, { contentType: req.file.mimetype });
+    if (error) return res.status(500).json({ message: error.message });
+    const { data } = supabase.storage.from('uploads').getPublicUrl(filePath);
     req.user.files.push(data.publicUrl);
     await req.user.save();
-
-    res.json({
-      message: 'File uploaded to Supabase',
-      url: data.publicUrl
-    });
-
+    res.json({ message: 'File uploaded', url: data.publicUrl });
   } catch (err) {
     res.status(500).json({ message: 'Upload failed' });
   }
@@ -78,41 +44,15 @@ exports.uploadFile = async (req, res) => {
 
 exports.deleteFile = async (req, res) => {
   try {
-    const { fileUrl } = req.body;
-
-    if (!fileUrl) {
-      return res.status(400).json({ message: 'File URL required' });
-    }
-
-    // 1️⃣ Extract Supabase file path from URL
-    // Example URL:
-    // https://xxxx.supabase.co/storage/v1/object/public/uploads/user-123/file.png
-
-    const bucketName = 'uploads';
-    const filePath = fileUrl.split(`/storage/v1/object/public/${bucketName}/`)[1];
-
-    if (!filePath) {
-      return res.status(400).json({ message: 'Invalid file URL' });
-    }
-
-    // 2️⃣ Remove file from Supabase Storage
-    const { error } = await supabase
-      .storage
-      .from(bucketName)
-      .remove([filePath]);
-
-    if (error) {
-      return res.status(500).json({ message: error.message });
-    }
-
-    // 3️⃣ Remove file URL from MongoDB
-    req.user.files = req.user.files.filter(file => file !== fileUrl);
+    if (!req.body.fileUrl) return res.status(400).json({ message: 'File URL required' });
+    const filePath = req.body.fileUrl.split('/storage/v1/object/public/uploads/')[1];
+    if (!filePath) return res.status(400).json({ message: 'Invalid file URL' });
+    const { error } = await supabase.storage.from('uploads').remove([filePath]);
+    if (error) return res.status(500).json({ message: error.message });
+    req.user.files = req.user.files.filter(file => file !== req.body.fileUrl);
     await req.user.save();
-
     res.json({ message: 'File deleted successfully' });
-
   } catch (err) {
-    console.error(err);
     res.status(500).json({ message: 'Delete failed' });
   }
 };

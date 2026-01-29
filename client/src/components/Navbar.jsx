@@ -22,7 +22,7 @@ function Navbar() {
     setShowDropdown(false);
     switch (option) {
       case 'about':
-        setShowAbout(true); // Show the modal instead of alert
+        navigate('/about');
         break;
       case 'rate':
         window.open(
@@ -51,6 +51,7 @@ function Navbar() {
           {!isLoggedIn && <Link to="/login">Login</Link>}
           {isLoggedIn && <Link to="/dashboard">Dashboard</Link>}
           {isLoggedIn && <button onClick={handleLogout}>Logout</button>}
+          <Link to="/admin-login" className="admin-link">Admin</Link>
 
           {/* More Button and Dropdown */}
           <div className="more-options">
@@ -65,21 +66,6 @@ function Navbar() {
           </div>
         </div>
       </nav>
-
-      {/* About Us Modal */}
-      {showAbout && (
-        <div className="modal-overlay">
-          <div className="modal-box">
-            <h2>About WebNote</h2>
-            <p>
-              WebNote is a secure and user-friendly file management application
-              designed for storing, managing, and accessing your personal files
-              from anywhere. Built with privacy and simplicity in mind.
-            </p>
-            <button onClick={() => setShowAbout(false)}>Close</button>
-          </div>
-        </div>
-      )}
     </>
   );
 }

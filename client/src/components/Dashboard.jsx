@@ -40,7 +40,7 @@ function Dashboard() {
 
   const fetchFiles = async () => {
     const token = localStorage.getItem('token');
-    const res = await axios.get('http://localhost:5000/api/account', {
+    const res = await axios.get('https://androidwebnote.onrender.com/api/account', {
       headers: { Authorization: `Bearer ${token}` },
     });
 
@@ -83,7 +83,7 @@ function Dashboard() {
     formData.append('description', description.trim());
     formData.append('category', category);
 
-    await axios.post('http://localhost:5000/api/upload', formData, {
+    await axios.post('https://androidwebnote.onrender.com/api/upload', formData, {
       headers: { Authorization: `Bearer ${token}` },
     });
 
@@ -106,7 +106,7 @@ function Dashboard() {
     setConvertedFileName('');
 
     try {
-      const res = await axios.post('http://localhost:5000/api/convert', formData, {
+      const res = await axios.post('https://androidwebnote.onrender.com/api/convert', formData, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setConvertedFileUrl(res.data?.convertedFile?.url || '');
@@ -124,7 +124,7 @@ function Dashboard() {
 
     try {
       await axios.post(
-        'http://localhost:5000/api/delete',
+        'https://androidwebnote.onrender.com/api/delete',
         { fileUrl },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -138,7 +138,7 @@ function Dashboard() {
     const token = localStorage.getItem('token');
     try {
       const res = await axios.patch(
-        'http://localhost:5000/api/channel-handle',
+        'https://androidwebnote.onrender.com/api/channel-handle',
         { channelHandle: channelHandleInput },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -157,7 +157,7 @@ function Dashboard() {
     formData.append('logo', channelLogoFile);
 
     try {
-      const res = await axios.patch('http://localhost:5000/api/channel-logo', formData, {
+      const res = await axios.patch('https://androidwebnote.onrender.com/api/channel-logo', formData, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setMyChannel(res.data.channel || null);

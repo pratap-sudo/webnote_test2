@@ -12,7 +12,7 @@ function Channels() {
   useEffect(() => {
     const fetchChannels = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/api/channels');
+        const res = await axios.get('https://androidwebnote.onrender.com/api/channels');
         setChannels(res.data.channels || []);
       } catch (err) {
         setChannels([]);

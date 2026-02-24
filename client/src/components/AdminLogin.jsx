@@ -17,7 +17,7 @@ function AdminLogin() {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await axios.post('http://localhost:5000/api/admin/login', formData);
+      const res = await axios.post('https://androidwebnote.onrender.com/api/admin/login', formData);
       localStorage.setItem('adminToken', res.data.token);
       navigate('/admin-dashboard');
     } catch (err) {

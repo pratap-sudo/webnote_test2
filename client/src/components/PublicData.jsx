@@ -36,8 +36,8 @@ function PublicData() {
   const fetchPublicFiles = async () => {
     try {
       const [publicDataRes, channelsRes] = await Promise.all([
-        axios.get('http://localhost:5000/api/public-data'),
-        axios.get('http://localhost:5000/api/channels'),
+        axios.get('https://androidwebnote.onrender.com/api/public-data'),
+        axios.get('https://androidwebnote.onrender.com/api/channels'),
       ]);
       setFiles(publicDataRes.data.files || []);
       setChannels(channelsRes.data.channels || []);

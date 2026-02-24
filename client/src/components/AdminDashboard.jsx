@@ -18,7 +18,7 @@ function AdminDashboard() {
   const fetchStats = async () => {
     const token = localStorage.getItem('adminToken');
     try {
-      const res = await axios.get('http://localhost:5000/api/admin/stats', {
+      const res = await axios.get('https://androidwebnote.onrender.com/api/admin/stats', {
         headers: { Authorization: `Bearer ${token}` },
       });
       setStats(res.data);
@@ -34,7 +34,7 @@ function AdminDashboard() {
 
     const token = localStorage.getItem('adminToken');
     try {
-      await axios.delete(`http://localhost:5000/api/admin/users/${userId}`, {
+      await axios.delete(`https://androidwebnote.onrender.com/api/admin/users/${userId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       alert('User deleted successfully');
@@ -48,7 +48,7 @@ function AdminDashboard() {
     const token = localStorage.getItem('adminToken');
     try {
       await axios.patch(
-        `http://localhost:5000/api/admin/users/${userId}/toggle-admin`,
+        `https://androidwebnote.onrender.com/api/admin/users/${userId}/toggle-admin`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );

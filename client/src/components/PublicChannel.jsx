@@ -36,7 +36,7 @@ function PublicChannel() {
   useEffect(() => {
     const fetchChannel = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/api/channels/${encodeURIComponent(channelRef || '')}`);
+        const res = await axios.get(`https://androidwebnote.onrender.com/api/channels/${encodeURIComponent(channelRef || '')}`);
         setChannel(res.data.channel || null);
         setFiles(res.data.files || []);
       } catch (err) {

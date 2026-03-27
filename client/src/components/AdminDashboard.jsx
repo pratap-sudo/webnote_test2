@@ -18,6 +18,11 @@ function AdminDashboard() {
   const [roleFilter, setRoleFilter] = useState('all');
   const [sortKey, setSortKey] = useState('createdAt');
   const [sortDir, setSortDir] = useState('desc');
+  const [pageSize, setPageSize] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [auditLogs, setAuditLogs] = useState([]);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [detailsLoading, setDetailsLoading] = useState(false);
   const navigate = useNavigate();
   const token = localStorage.getItem('adminToken');
 
@@ -33,6 +38,18 @@ function AdminDashboard() {
     } catch (err) {
       alert('Error fetching stats');
       navigate('/admin-login');
+    }
+  };
+
+  const fetchAuditLogs = async () => {
+    const token = localStorage.getItem('adminToken');
+    try {
+      const res = await axios.get(`${API_BASE_URL}/api/admin/audit-logs?limit=25`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setAuditLogs(res.data.logs || []);
+    } catch (err) {
+      // keep silent for now
     }
   };
 
@@ -61,8 +78,25 @@ function AdminDashboard() {
       );
       alert('Admin status updated');
       fetchStats();
+      fetchAuditLogs();
     } catch (err) {
       alert('Error updating admin status');
+    }
+  };
+
+  const handleToggleDisable = async (userId) => {
+    const token = localStorage.getItem('adminToken');
+    try {
+      await axios.patch(
+        `${API_BASE_URL}/api/admin/users/${userId}/toggle-disable`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      alert('User status updated');
+      fetchStats();
+      fetchAuditLogs();
+    } catch (err) {
+      alert('Error updating user status');
     }
   };
 
@@ -73,6 +107,7 @@ function AdminDashboard() {
 
   useEffect(() => {
     fetchStats();
+    fetchAuditLogs();
   }, []);
 
   const filteredUsers = useMemo(() => {
@@ -104,6 +139,36 @@ function AdminDashboard() {
 
     return next;
   }, [query, roleFilter, sortKey, sortDir, stats.users]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredUsers.length / pageSize));
+  const safePage = Math.min(currentPage, totalPages);
+  const pageStart = (safePage - 1) * pageSize;
+  const pagedUsers = filteredUsers.slice(pageStart, pageStart + pageSize);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [query, roleFilter, sortKey, sortDir, pageSize]);
+
+  const openUserDetails = async (user) => {
+    const token = localStorage.getItem('adminToken');
+    setSelectedUser(user);
+    setDetailsLoading(true);
+    try {
+      const res = await axios.get(`${API_BASE_URL}/api/admin/users/${user.id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setSelectedUser(res.data.user);
+      fetchAuditLogs();
+    } catch (err) {
+      alert('Error fetching user details');
+    } finally {
+      setDetailsLoading(false);
+    }
+  };
+
+  const closeUserDetails = () => {
+    setSelectedUser(null);
+  };
 
   const handleExportCsv = () => {
     const rows = filteredUsers.map((user) => ({
@@ -175,6 +240,12 @@ function AdminDashboard() {
             {lastUpdated ? `Updated ${lastUpdated.toLocaleTimeString()}` : 'Not synced yet'}
           </p>
         </div>
+        <div className="stat-card">
+          <h3>Disabled Users</h3>
+          <p className="stat-number">
+            {stats.users.filter((user) => user.isDisabled).length}
+          </p>
+        </div>
       </div>
 
       <div className="users-section">
@@ -216,6 +287,14 @@ function AdminDashboard() {
                 <option value="fileCount">File Count</option>
               </select>
             </label>
+            <label>
+              Page Size
+              <select value={pageSize} onChange={(e) => setPageSize(Number(e.target.value))}>
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+              </select>
+            </label>
             <button
               type="button"
               className="sort-dir"
@@ -226,47 +305,86 @@ function AdminDashboard() {
           </div>
         </div>
 
-        <table className="users-table">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Files</th>
-              <th>Status</th>
-              <th>Joined</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredUsers.map((user) => (
-              <tr key={user.id}>
-                <td>{user.name}</td>
-                <td>{user.email}</td>
-                <td>{user.fileCount}</td>
-                <td>
-                  <span className={`status-badge ${user.isAdmin ? 'admin' : 'user'}`}>
-                    {user.isAdmin ? 'Admin' : 'User'}
-                  </span>
-                </td>
-                <td>{new Date(user.createdAt).toLocaleDateString()}</td>
-                <td className="action-buttons">
-                  <button
-                    onClick={() => handleToggleAdmin(user.id)}
-                    className={`toggle-btn ${user.isAdmin ? 'revoke' : 'grant'}`}
-                  >
-                    {user.isAdmin ? 'Revoke Admin' : 'Make Admin'}
-                  </button>
-                  <button
-                    onClick={() => handleDeleteUser(user.id)}
-                    className="delete-btn"
-                  >
-                    Delete
-                  </button>
-                </td>
+        <div className="table-wrapper">
+          <table className="users-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Files</th>
+                <th>Status</th>
+                <th>Joined</th>
+                <th>Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {pagedUsers.map((user) => (
+                <tr key={user.id} className={user.isDisabled ? 'row-disabled' : ''}>
+                  <td>{user.name}</td>
+                  <td>{user.email}</td>
+                  <td>{user.fileCount}</td>
+                  <td>
+                    <div className="status-stack">
+                      <span className={`status-badge ${user.isAdmin ? 'admin' : 'user'}`}>
+                        {user.isAdmin ? 'Admin' : 'User'}
+                      </span>
+                      {user.isDisabled && (
+                        <span className="status-badge disabled">Disabled</span>
+                      )}
+                    </div>
+                  </td>
+                  <td>{new Date(user.createdAt).toLocaleDateString()}</td>
+                  <td className="action-buttons">
+                    <button
+                      onClick={() => openUserDetails(user)}
+                      className="view-btn"
+                    >
+                      View
+                    </button>
+                    <button
+                      onClick={() => handleToggleAdmin(user.id)}
+                      className={`toggle-btn ${user.isAdmin ? 'revoke' : 'grant'}`}
+                    >
+                      {user.isAdmin ? 'Revoke Admin' : 'Make Admin'}
+                    </button>
+                    <button
+                      onClick={() => handleToggleDisable(user.id)}
+                      className={`toggle-btn ${user.isDisabled ? 'enable' : 'disable'}`}
+                    >
+                      {user.isDisabled ? 'Enable' : 'Disable'}
+                    </button>
+                    <button
+                      onClick={() => handleDeleteUser(user.id)}
+                      className="delete-btn"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="pagination">
+          <button
+            type="button"
+            onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+            disabled={safePage === 1}
+          >
+            Previous
+          </button>
+          <span>
+            Page {safePage} of {totalPages}
+          </span>
+          <button
+            type="button"
+            onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+            disabled={safePage === totalPages}
+          >
+            Next
+          </button>
+        </div>
         {filteredUsers.length === 0 && (
           <div className="empty-state">
             <p>No users match your filters.</p>
@@ -276,6 +394,68 @@ function AdminDashboard() {
           </div>
         )}
       </div>
+
+      <div className="audit-section">
+        <div className="audit-header">
+          <h2>Audit Log</h2>
+          <p>Recent admin actions</p>
+        </div>
+        <div className="audit-list">
+          {auditLogs.map((log) => (
+            <div key={log._id} className="audit-item">
+              <div>
+                <p className="audit-action">{log.action.replace('user.', '').toUpperCase()}</p>
+                <p className="audit-meta">
+                  {log.actorEmail || 'Admin'} {log.targetEmail ? `→ ${log.targetEmail}` : ''}
+                </p>
+              </div>
+              <span className="audit-time">
+                {new Date(log.createdAt).toLocaleString()}
+              </span>
+            </div>
+          ))}
+          {auditLogs.length === 0 && <p className="audit-empty">No activity yet.</p>}
+        </div>
+      </div>
+
+      {selectedUser && (
+        <div className="drawer-overlay" onClick={closeUserDetails}>
+          <aside className="drawer" onClick={(e) => e.stopPropagation()}>
+            <div className="drawer-header">
+              <div>
+                <h3>{selectedUser.name}</h3>
+                <p>{selectedUser.email}</p>
+              </div>
+              <button className="drawer-close" onClick={closeUserDetails}>Close</button>
+            </div>
+            {detailsLoading ? (
+              <p>Loading details...</p>
+            ) : (
+              <div className="drawer-body">
+                <div className="drawer-meta">
+                  <span>{selectedUser.isAdmin ? 'Admin' : 'User'}</span>
+                  {selectedUser.isDisabled && <span className="drawer-badge">Disabled</span>}
+                  <span>Joined {new Date(selectedUser.createdAt).toLocaleDateString()}</span>
+                </div>
+                <h4>Files</h4>
+                <ul className="drawer-files">
+                  {(selectedUser.files || []).slice(0, 10).map((file, idx) => (
+                    <li key={idx}>
+                      <span className="file-url">{file.url || 'Unknown file'}</span>
+                      <span className={`file-visibility ${file.visibility === 'public' ? 'public' : 'private'}`}>
+                        {file.visibility || 'private'}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+                {(selectedUser.files || []).length > 10 && (
+                  <p className="drawer-note">Showing first 10 files.</p>
+                )}
+              </div>
+            )}
+          </aside>
+        </div>
+      )}
     </div>
   );
 }

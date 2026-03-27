@@ -9,6 +9,8 @@ const userSchema = new mongoose.Schema({
   channelLogoUrl: { type: String, default: '' },
   files: { type: [mongoose.Schema.Types.Mixed], default: [] },
   isAdmin: { type: Boolean, default: false },
+  isDisabled: { type: Boolean, default: false },
+  disabledAt: { type: Date, default: null },
   createdAt: { type: Date, default: Date.now },
 });
 

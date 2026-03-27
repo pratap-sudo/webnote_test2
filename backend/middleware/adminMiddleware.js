@@ -12,6 +12,9 @@ const adminProtect = async (req, res, next) => {
     if (!user || !user.isAdmin) {
       return res.status(403).json({ message: 'Access denied. Admin only' });
     }
+    if (user.isDisabled) {
+      return res.status(403).json({ message: 'Admin account disabled' });
+    }
 
     req.user = user;
     next();

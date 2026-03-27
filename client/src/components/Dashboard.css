@@ -436,6 +436,18 @@
   color: #fff;
 }
 
+.file-actions .view-btn,
+.file-actions a.view-btn {
+  background: linear-gradient(135deg, #0ea5a5 0%, #2563eb 100%);
+  color: #fff;
+  border: none;
+  text-decoration: none;
+}
+
+.file-actions .view-btn:visited {
+  color: #fff;
+}
+
 .delete-btn {
   background: #fef2f2;
   color: #b42318;

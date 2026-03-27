@@ -210,8 +210,8 @@ function Dashboard() {
         </div>
 
         <div className="file-actions">
-          <a href={item.url} target="_blank" rel="noreferrer" className="view-btn" title="View file">
-            View
+          <a href={item.url} target="_blank" rel="noreferrer" className="view-btn" title="Open file">
+            Open
           </a>
           <button className="delete-btn" onClick={() => handleDelete(item.url)}>
             Delete

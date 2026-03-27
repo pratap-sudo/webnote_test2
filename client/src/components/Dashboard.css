@@ -415,6 +415,8 @@
   display: flex;
   gap: 8px;
   padding: 0 12px 12px;
+  border-top: 1px solid #e6edf7;
+  background: #f8fbff;
 }
 
 .view-btn,
@@ -425,6 +427,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  font-weight: 700;
+  font-size: 13px;
 }
 
 .view-btn {
@@ -436,6 +440,11 @@
   background: #fef2f2;
   color: #b42318;
   border: 1px solid #fecaca;
+}
+
+[data-theme='dark'] .file-actions {
+  border-top: 1px solid #1f2937;
+  background: #0f172a;
 }
 
 .delete-btn:hover {

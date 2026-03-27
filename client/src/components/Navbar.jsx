@@ -78,6 +78,9 @@ function Navbar() {
           {!isLoggedIn && <Link to="/login">Login</Link>}
           <Link to="/admin-login" className="admin-link">Admin</Link>
           {isLoggedIn && <button onClick={handleLogout}>Logout</button>}
+          <button type="button" className="theme-toggle-inline" onClick={toggleTheme}>
+            {theme === 'dark' ? 'Light Mode' : 'Night Mode'}
+          </button>
 
           <div className="more-options">
             <button className="more-btn" onClick={toggleDropdown}>More</button>
@@ -92,9 +95,6 @@ function Navbar() {
         </div>
 
         <div className="navbar-actions">
-          <button type="button" className="theme-toggle-btn" onClick={toggleTheme}>
-            {theme === 'dark' ? 'Light Mode' : 'Night Mode'}
-          </button>
           <button
             type="button"
             className="hamburger-btn"

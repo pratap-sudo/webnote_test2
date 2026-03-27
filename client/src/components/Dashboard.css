@@ -459,6 +459,64 @@
   font-weight: 600;
 }
 
+[data-theme='dark'] .dashboard-container {
+  background:
+    radial-gradient(circle at 10% 8%, rgba(79, 209, 197, 0.12), transparent 34%),
+    radial-gradient(circle at 92% 12%, rgba(96, 165, 250, 0.12), transparent 32%),
+    #0b111c;
+}
+
+[data-theme='dark'] .dashboard-header,
+[data-theme='dark'] .file-count,
+[data-theme='dark'] .channel-link,
+[data-theme='dark'] .convert-subtitle,
+[data-theme='dark'] .convert-message,
+[data-theme='dark'] .empty-text {
+  color: #cbd5e1;
+}
+
+[data-theme='dark'] .upload-box,
+[data-theme='dark'] .convert-box,
+[data-theme='dark'] .filter-section,
+[data-theme='dark'] .empty-state,
+[data-theme='dark'] .file-item {
+  background: #111827;
+  border-color: #1f2937;
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.35);
+}
+
+[data-theme='dark'] .file-label,
+[data-theme='dark'] .upload-text,
+[data-theme='dark'] .visibility-label,
+[data-theme='dark'] .description-label,
+[data-theme='dark'] .file-name {
+  color: #e5e7eb;
+}
+
+[data-theme='dark'] .description-input,
+[data-theme='dark'] .convert-file-input,
+[data-theme='dark'] .convert-format-select,
+[data-theme='dark'] .search-input,
+[data-theme='dark'] .filter-btn {
+  background: #0f172a;
+  border-color: #1f2937;
+  color: #e5e7eb;
+}
+
+[data-theme='dark'] .file-preview {
+  background: linear-gradient(135deg, #0f172a 0%, #111827 100%);
+}
+
+[data-theme='dark'] .file-description {
+  color: #9aa4b2;
+}
+
+[data-theme='dark'] .delete-btn {
+  background: rgba(244, 63, 94, 0.12);
+  border-color: rgba(244, 63, 94, 0.4);
+  color: #fca5a5;
+}
+
 @media (max-width: 768px) {
   .dashboard-container {
     padding: 14px 10px 20px;

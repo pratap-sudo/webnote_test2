@@ -133,6 +133,34 @@
   font-size: 13px;
 }
 
+[data-theme='dark'] .hero-section {
+  box-shadow: 0 20px 48px rgba(3, 10, 24, 0.6);
+}
+
+[data-theme='dark'] .hero-panel {
+  background: rgba(15, 23, 42, 0.6);
+  border-color: rgba(148, 163, 184, 0.25);
+}
+
+[data-theme='dark'] .features-section h2,
+[data-theme='dark'] .feature-card h3 {
+  color: #e5e7eb;
+}
+
+[data-theme='dark'] .feature-card {
+  background: #111827;
+  border-color: #1f2937;
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.35);
+}
+
+[data-theme='dark'] .feature-card p {
+  color: #9aa4b2;
+}
+
+[data-theme='dark'] .footer {
+  color: #9aa4b2;
+}
+
 @media (max-width: 900px) {
   .hero-section {
     grid-template-columns: 1fr;

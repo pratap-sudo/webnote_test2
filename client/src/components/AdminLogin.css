@@ -104,3 +104,33 @@
 .admin-login-footer a:hover {
   text-decoration: underline;
 }
+
+[data-theme='dark'] .admin-login-container {
+  background: linear-gradient(135deg, #1f2937 0%, #0f172a 100%);
+}
+
+[data-theme='dark'] .admin-login-box {
+  background: #111827;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45);
+}
+
+[data-theme='dark'] .admin-login-heading {
+  color: #e5e7eb;
+}
+
+[data-theme='dark'] .admin-login-subtitle,
+[data-theme='dark'] .admin-login-footer {
+  color: #9aa4b2;
+}
+
+[data-theme='dark'] .admin-login-input {
+  background: #0f172a;
+  border-color: #1f2937;
+  color: #e5e7eb;
+}
+
+[data-theme='dark'] .admin-login-message.error {
+  background-color: rgba(244, 63, 94, 0.12);
+  color: #fca5a5;
+  border-color: rgba(244, 63, 94, 0.4);
+}

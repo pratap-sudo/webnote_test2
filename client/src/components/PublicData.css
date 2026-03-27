@@ -244,3 +244,47 @@
   color: #1d4ed8;
   font-weight: 700;
 }
+
+[data-theme='dark'] .public-data-container {
+  background:
+    radial-gradient(circle at 12% 12%, rgba(79, 209, 197, 0.12), transparent 35%),
+    radial-gradient(circle at 86% 10%, rgba(96, 165, 250, 0.12), transparent 35%),
+    #0b111c;
+}
+
+[data-theme='dark'] .public-data-content {
+  color: #e5e7eb;
+}
+
+[data-theme='dark'] .public-data-content p,
+[data-theme='dark'] .public-description,
+[data-theme='dark'] .public-channel-empty {
+  color: #9aa4b2;
+}
+
+[data-theme='dark'] .public-search-input,
+[data-theme='dark'] .public-filter-btn,
+[data-theme='dark'] .public-channels-box,
+[data-theme='dark'] .public-card,
+[data-theme='dark'] .public-empty,
+[data-theme='dark'] .public-channel-item {
+  background: #111827;
+  border-color: #1f2937;
+  color: #e5e7eb;
+}
+
+[data-theme='dark'] .public-channel-item {
+  background: #0f172a;
+}
+
+[data-theme='dark'] .public-preview {
+  background: linear-gradient(135deg, #0f172a 0%, #111827 100%);
+}
+
+[data-theme='dark'] .public-file-label {
+  color: #cbd5f5;
+}
+
+[data-theme='dark'] .public-back-link {
+  color: #93c5fd;
+}

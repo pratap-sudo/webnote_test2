@@ -78,9 +78,6 @@ function Navbar() {
           {!isLoggedIn && <Link to="/login">Login</Link>}
           <Link to="/admin-login" className="admin-link">Admin</Link>
           {isLoggedIn && <button onClick={handleLogout}>Logout</button>}
-          <button type="button" className="theme-toggle" onClick={toggleTheme}>
-            {theme === 'dark' ? 'Light Mode' : 'Night Mode'}
-          </button>
 
           <div className="more-options">
             <button className="more-btn" onClick={toggleDropdown}>More</button>
@@ -94,14 +91,19 @@ function Navbar() {
           </div>
         </div>
 
-        <button
-          type="button"
-          className="hamburger-btn"
-          onClick={() => setIsSidebarOpen(true)}
-          aria-label="Open menu"
-        >
-          ?
-        </button>
+        <div className="navbar-actions">
+          <button type="button" className="theme-toggle-btn" onClick={toggleTheme}>
+            {theme === 'dark' ? 'Light Mode' : 'Night Mode'}
+          </button>
+          <button
+            type="button"
+            className="hamburger-btn"
+            onClick={() => setIsSidebarOpen(true)}
+            aria-label="Open menu"
+          >
+            ?
+          </button>
+        </div>
       </nav>
 
       <div className={`mobile-overlay ${isSidebarOpen ? 'open' : ''}`} onClick={closeSidebar} />
@@ -119,7 +121,7 @@ function Navbar() {
           {!isLoggedIn && <Link to="/register" onClick={closeSidebar}>Register</Link>}
           {!isLoggedIn && <Link to="/login" onClick={closeSidebar}>Login</Link>}
           <Link to="/admin-login" onClick={closeSidebar}>Admin</Link>
-          <button type="button" className="theme-toggle" onClick={toggleTheme}>
+          <button type="button" className="theme-toggle-btn" onClick={toggleTheme}>
             {theme === 'dark' ? 'Light Mode' : 'Night Mode'}
           </button>
           <button type="button" onClick={() => handleOptionClick('about')}>About Us</button>

@@ -25,6 +25,12 @@
   gap: 8px;
 }
 
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .navbar-links a,
 .navbar-links button,
 .more-btn {
@@ -168,9 +174,21 @@
   background: var(--sidebar-item-hover);
 }
 
-.theme-toggle {
+.theme-toggle-btn {
   border: 1px solid var(--nav-border);
   background: rgba(255, 255, 255, 0.08);
+  color: var(--nav-link);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 9px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.theme-toggle-btn:hover {
+  background: var(--nav-hover-bg);
+  color: var(--nav-link-hover);
 }
 
 @media (max-width: 980px) {

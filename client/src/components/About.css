@@ -62,6 +62,11 @@
   overflow-x: hidden;
 }
 
+[data-theme='dark'] .about-container {
+  color: #e5e7eb;
+  background: #0b111c;
+}
+
 /* Hero Section */
 .about-hero {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -123,6 +128,13 @@
   background: linear-gradient(to bottom, #f8f9fa, white);
 }
 
+[data-theme='dark'] .mission-section,
+[data-theme='dark'] .why-section,
+[data-theme='dark'] .timeline-section,
+[data-theme='dark'] .values-section {
+  background: #0b111c;
+}
+
 .section-content {
   max-width: 1200px;
   margin: 0 auto;
@@ -173,6 +185,35 @@
   font-size: 16px;
   line-height: 1.9;
   color: #555;
+}
+
+[data-theme='dark'] .mission-card,
+[data-theme='dark'] .feature-item,
+[data-theme='dark'] .team-member,
+[data-theme='dark'] .timeline-content,
+[data-theme='dark'] .value-card {
+  background: #111827;
+  color: #e5e7eb;
+  border-color: #1f2937;
+  box-shadow: 0 18px 36px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme='dark'] .mission-card p,
+[data-theme='dark'] .feature-item p,
+[data-theme='dark'] .team-member .bio,
+[data-theme='dark'] .timeline-content p,
+[data-theme='dark'] .value-card p,
+[data-theme='dark'] .section-intro {
+  color: #9aa4b2;
+}
+
+[data-theme='dark'] .why-section h2,
+[data-theme='dark'] .timeline-section h2,
+[data-theme='dark'] .values-section h2,
+[data-theme='dark'] .feature-item h3,
+[data-theme='dark'] .team-member h3,
+[data-theme='dark'] .value-card h3 {
+  color: #e5e7eb;
 }
 
 /* Why Section */

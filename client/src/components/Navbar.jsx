@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './Navbar.css';
 import { useAuth } from '../context/AuthContext';
@@ -8,6 +8,14 @@ function Navbar() {
   const { isLoggedIn, logout } = useAuth();
   const [showDropdown, setShowDropdown] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [theme, setTheme] = useState(() => {
+    const stored = localStorage.getItem('theme');
+    if (stored) return stored;
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      return 'dark';
+    }
+    return 'light';
+  });
 
   const handleLogout = () => {
     logout();
@@ -17,6 +25,10 @@ function Navbar() {
 
   const toggleDropdown = () => {
     setShowDropdown(!showDropdown);
+  };
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
   };
 
   const handleOptionClick = (option) => {
@@ -47,6 +59,11 @@ function Navbar() {
     setIsSidebarOpen(false);
   };
 
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
   return (
     <>
       <nav className="navbar">
@@ -61,6 +78,9 @@ function Navbar() {
           {!isLoggedIn && <Link to="/login">Login</Link>}
           <Link to="/admin-login" className="admin-link">Admin</Link>
           {isLoggedIn && <button onClick={handleLogout}>Logout</button>}
+          <button type="button" className="theme-toggle" onClick={toggleTheme}>
+            {theme === 'dark' ? 'Light Mode' : 'Night Mode'}
+          </button>
 
           <div className="more-options">
             <button className="more-btn" onClick={toggleDropdown}>More</button>
@@ -99,6 +119,9 @@ function Navbar() {
           {!isLoggedIn && <Link to="/register" onClick={closeSidebar}>Register</Link>}
           {!isLoggedIn && <Link to="/login" onClick={closeSidebar}>Login</Link>}
           <Link to="/admin-login" onClick={closeSidebar}>Admin</Link>
+          <button type="button" className="theme-toggle" onClick={toggleTheme}>
+            {theme === 'dark' ? 'Light Mode' : 'Night Mode'}
+          </button>
           <button type="button" onClick={() => handleOptionClick('about')}>About Us</button>
           <button type="button" onClick={() => handleOptionClick('rate')}>Rate Us</button>
           <button type="button" onClick={() => handleOptionClick('feedback')}>Feedback</button>

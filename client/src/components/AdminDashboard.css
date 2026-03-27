@@ -13,12 +13,29 @@
   --danger: #b3261e;
 }
 
+[data-theme='dark'] {
+  --ink: #e5e7eb;
+  --muted: #9aa4b2;
+  --paper: #0b111c;
+  --panel: #111827;
+  --line: #1f2937;
+  --accent: #4fd1c5;
+  --accent-dark: #2cc5b8;
+  --sand: #1b2333;
+  --sunset: #f59e0b;
+  --danger: #f97316;
+}
+
 .admin-container {
   min-height: 100vh;
   background: radial-gradient(circle at top, #ffffff 0%, var(--paper) 55%, #efe7dc 100%);
   padding-bottom: 50px;
   font-family: 'Space Grotesk', 'Segoe UI', sans-serif;
   color: var(--ink);
+}
+
+[data-theme='dark'] .admin-container {
+  background: radial-gradient(circle at top, #101827 0%, var(--paper) 55%, #0b111c 100%);
 }
 
 .admin-header {
@@ -268,6 +285,14 @@
   background-color: #fcf8f2;
 }
 
+[data-theme='dark'] .users-table thead {
+  background-color: #182233;
+}
+
+[data-theme='dark'] .users-table tbody tr:hover {
+  background-color: #1a2536;
+}
+
 .row-disabled {
   opacity: 0.6;
 }
@@ -447,6 +472,10 @@
   border-radius: 14px;
   background: #fff9f0;
   border: 1px solid var(--line);
+}
+
+[data-theme='dark'] .audit-item {
+  background: #151c2c;
 }
 
 .audit-action {

@@ -474,8 +474,12 @@
   border: 1px solid var(--line);
 }
 
-[data-theme='dark'] .audit-item {
-  background: #151c2c;
+[data-theme='dark'] .view-btn,
+[data-theme='dark'] .sort-dir,
+[data-theme='dark'] .pagination button,
+[data-theme='dark'] .search-field input,
+[data-theme='dark'] .filter-group select {
+  color: #111827;
 }
 
 .audit-action {

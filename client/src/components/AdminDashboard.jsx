@@ -24,78 +24,74 @@ function AdminDashboard() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [detailsLoading, setDetailsLoading] = useState(false);
   const navigate = useNavigate();
-  const token = localStorage.getItem('adminToken');
+
+  /* ── API helpers ── */
+  const getToken = () => localStorage.getItem('adminToken');
 
   const fetchStats = async () => {
-    const token = localStorage.getItem('adminToken');
     try {
       const res = await axios.get(`${API_BASE_URL}/api/admin/stats`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${getToken()}` },
       });
       setStats(res.data);
       setLastUpdated(new Date());
       setLoading(false);
-    } catch (err) {
+    } catch {
       alert('Error fetching stats');
       navigate('/admin-login');
     }
   };
 
   const fetchAuditLogs = async () => {
-    const token = localStorage.getItem('adminToken');
     try {
       const res = await axios.get(`${API_BASE_URL}/api/admin/audit-logs?limit=25`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${getToken()}` },
       });
       setAuditLogs(res.data.logs || []);
-    } catch (err) {
-      // keep silent for now
+    } catch {
+      // silent
     }
   };
 
   const handleDeleteUser = async (userId) => {
     if (!window.confirm('Are you sure you want to delete this user?')) return;
-
-    const token = localStorage.getItem('adminToken');
     try {
       await axios.delete(`${API_BASE_URL}/api/admin/users/${userId}`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${getToken()}` },
       });
       alert('User deleted successfully');
       fetchStats();
-    } catch (err) {
+    } catch {
       alert('Error deleting user');
     }
   };
 
   const handleToggleAdmin = async (userId) => {
-    const token = localStorage.getItem('adminToken');
     try {
       await axios.patch(
         `${API_BASE_URL}/api/admin/users/${userId}/toggle-admin`,
         {},
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${getToken()}` } }
       );
       alert('Admin status updated');
       fetchStats();
       fetchAuditLogs();
-    } catch (err) {
+    } catch {
       alert('Error updating admin status');
     }
   };
 
   const handleToggleDisable = async (userId) => {
-    const token = localStorage.getItem('adminToken');
     try {
       await axios.patch(
         `${API_BASE_URL}/api/admin/users/${userId}/toggle-disable`,
         {},
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${getToken()}` } }
       );
       alert('User status updated');
       fetchStats();
       fetchAuditLogs();
-    } catch (err) {
+    } catch {
       alert('Error updating user status');
     }
   };
@@ -110,16 +106,19 @@ function AdminDashboard() {
     fetchAuditLogs();
   }, []);
 
+  /* ── Filtering / sorting / pagination ── */
   const filteredUsers = useMemo(() => {
     const term = query.trim().toLowerCase();
     let next = stats.users.filter((user) => {
-      const matchesQuery = !term
-        || String(user.name || '').toLowerCase().includes(term)
-        || String(user.email || '').toLowerCase().includes(term);
+      const matchesQuery =
+        !term ||
+        String(user.name || '').toLowerCase().includes(term) ||
+        String(user.email || '').toLowerCase().includes(term);
 
-      const matchesRole = roleFilter === 'all'
-        || (roleFilter === 'admin' && user.isAdmin)
-        || (roleFilter === 'user' && !user.isAdmin);
+      const matchesRole =
+        roleFilter === 'all' ||
+        (roleFilter === 'admin' && user.isAdmin) ||
+        (roleFilter === 'user' && !user.isAdmin);
 
       return matchesQuery && matchesRole;
     });
@@ -149,27 +148,26 @@ function AdminDashboard() {
     setCurrentPage(1);
   }, [query, roleFilter, sortKey, sortDir, pageSize]);
 
+  /* ── Drawer ── */
   const openUserDetails = async (user) => {
-    const token = localStorage.getItem('adminToken');
     setSelectedUser(user);
     setDetailsLoading(true);
     try {
       const res = await axios.get(`${API_BASE_URL}/api/admin/users/${user.id}`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${getToken()}` },
       });
       setSelectedUser(res.data.user);
       fetchAuditLogs();
-    } catch (err) {
+    } catch {
       alert('Error fetching user details');
     } finally {
       setDetailsLoading(false);
     }
   };
 
-  const closeUserDetails = () => {
-    setSelectedUser(null);
-  };
+  const closeUserDetails = () => setSelectedUser(null);
 
+  /* ── CSV Export ── */
   const handleExportCsv = () => {
     const rows = filteredUsers.map((user) => ({
       name: user.name || '',
@@ -196,12 +194,14 @@ function AdminDashboard() {
     window.URL.revokeObjectURL(url);
   };
 
+  /* ── Render ── */
   if (loading) return <div className="loading">Loading admin dashboard...</div>;
 
   return (
     <div className="admin-container">
       <Navbar />
-      
+
+      {/* Header */}
       <div className="admin-header">
         <div>
           <p className="admin-eyebrow">Operations</p>
@@ -220,6 +220,7 @@ function AdminDashboard() {
         </div>
       </div>
 
+      {/* Stats */}
       <div className="stats-grid">
         <div className="stat-card">
           <h3>Total Users</h3>
@@ -237,22 +238,27 @@ function AdminDashboard() {
           <h3>Visible Users</h3>
           <p className="stat-number">{filteredUsers.length}</p>
           <p className="stat-caption">
-            {lastUpdated ? `Updated ${lastUpdated.toLocaleTimeString()}` : 'Not synced yet'}
+            {lastUpdated
+              ? `Updated ${lastUpdated.toLocaleTimeString()}`
+              : 'Not synced yet'}
           </p>
         </div>
         <div className="stat-card">
           <h3>Disabled Users</h3>
           <p className="stat-number">
-            {stats.users.filter((user) => user.isDisabled).length}
+            {stats.users.filter((u) => u.isDisabled).length}
           </p>
         </div>
       </div>
 
+      {/* Users Table */}
       <div className="users-section">
         <div className="users-header">
           <div>
             <h2>All Users</h2>
-            <p className="users-subtitle">Search, filter, and manage access in one place.</p>
+            <p className="users-subtitle">
+              Search, filter, and manage access in one place.
+            </p>
           </div>
           <div className="users-actions">
             <button onClick={handleExportCsv} className="export-btn">
@@ -273,7 +279,10 @@ function AdminDashboard() {
           <div className="filter-group">
             <label>
               Role
-              <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}>
+              <select
+                value={roleFilter}
+                onChange={(e) => setRoleFilter(e.target.value)}
+              >
                 <option value="all">All</option>
                 <option value="admin">Admins</option>
                 <option value="user">Users</option>
@@ -281,7 +290,10 @@ function AdminDashboard() {
             </label>
             <label>
               Sort
-              <select value={sortKey} onChange={(e) => setSortKey(e.target.value)}>
+              <select
+                value={sortKey}
+                onChange={(e) => setSortKey(e.target.value)}
+              >
                 <option value="createdAt">Joined Date</option>
                 <option value="name">Name</option>
                 <option value="fileCount">File Count</option>
@@ -289,7 +301,10 @@ function AdminDashboard() {
             </label>
             <label>
               Page Size
-              <select value={pageSize} onChange={(e) => setPageSize(Number(e.target.value))}>
+              <select
+                value={pageSize}
+                onChange={(e) => setPageSize(Number(e.target.value))}
+              >
                 <option value={10}>10</option>
                 <option value={20}>20</option>
                 <option value={50}>50</option>
@@ -298,9 +313,11 @@ function AdminDashboard() {
             <button
               type="button"
               className="sort-dir"
-              onClick={() => setSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'))}
+              onClick={() =>
+                setSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'))
+              }
             >
-              {sortDir === 'asc' ? 'Asc' : 'Desc'}
+              {sortDir === 'asc' ? '↑ Asc' : '↓ Desc'}
             </button>
           </div>
         </div>
@@ -318,54 +335,82 @@ function AdminDashboard() {
               </tr>
             </thead>
             <tbody>
-              {pagedUsers.map((user) => (
-                <tr key={user.id} className={user.isDisabled ? 'row-disabled' : ''}>
-                  <td>{user.name}</td>
-                  <td>{user.email}</td>
-                  <td>{user.fileCount}</td>
-                  <td>
-                    <div className="status-stack">
-                      <span className={`status-badge ${user.isAdmin ? 'admin' : 'user'}`}>
-                        {user.isAdmin ? 'Admin' : 'User'}
-                      </span>
-                      {user.isDisabled && (
-                        <span className="status-badge disabled">Disabled</span>
-                      )}
-                    </div>
-                  </td>
-                  <td>{new Date(user.createdAt).toLocaleDateString()}</td>
-                  <td className="action-buttons">
-                    <button
-                      onClick={() => openUserDetails(user)}
-                      className="view-btn"
-                    >
-                      View
-                    </button>
-                    <button
-                      onClick={() => handleToggleAdmin(user.id)}
-                      className={`toggle-btn ${user.isAdmin ? 'revoke' : 'grant'}`}
-                    >
-                      {user.isAdmin ? 'Revoke Admin' : 'Make Admin'}
-                    </button>
-                    <button
-                      onClick={() => handleToggleDisable(user.id)}
-                      className={`toggle-btn ${user.isDisabled ? 'enable' : 'disable'}`}
-                    >
-                      {user.isDisabled ? 'Enable' : 'Disable'}
-                    </button>
-                    <button
-                      onClick={() => handleDeleteUser(user.id)}
-                      className="delete-btn"
-                    >
-                      Delete
-                    </button>
+              {pagedUsers.length > 0 ? (
+                pagedUsers.map((user) => (
+                  <tr
+                    key={user.id}
+                    className={user.isDisabled ? 'row-disabled' : ''}
+                  >
+                    <td>{user.name || '—'}</td>
+                    <td>{user.email || '—'}</td>
+                    <td>{user.fileCount ?? 0}</td>
+                    <td>
+                      <div className="status-stack">
+                        <span
+                          className={`status-badge ${
+                            user.isAdmin ? 'admin' : 'user'
+                          }`}
+                        >
+                          {user.isAdmin ? 'Admin' : 'User'}
+                        </span>
+                        {user.isDisabled && (
+                          <span className="status-badge disabled">
+                            Disabled
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td>
+                      {user.createdAt
+                        ? new Date(user.createdAt).toLocaleDateString()
+                        : '—'}
+                    </td>
+                    <td>
+                      <div className="action-buttons">
+                        <button
+                          onClick={() => openUserDetails(user)}
+                          className="view-btn"
+                        >
+                          View
+                        </button>
+                        <button
+                          onClick={() => handleToggleAdmin(user.id)}
+                          className={`toggle-btn ${
+                            user.isAdmin ? 'revoke' : 'grant'
+                          }`}
+                        >
+                          {user.isAdmin ? 'Revoke Admin' : 'Make Admin'}
+                        </button>
+                        <button
+                          onClick={() => handleToggleDisable(user.id)}
+                          className={`toggle-btn ${
+                            user.isDisabled ? 'enable' : 'disable'
+                          }`}
+                        >
+                          {user.isDisabled ? 'Enable' : 'Disable'}
+                        </button>
+                        <button
+                          onClick={() => handleDeleteUser(user.id)}
+                          className="delete-btn"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={6} style={{ textAlign: 'center', padding: '24px', color: 'var(--muted)' }}>
+                    No users to display.
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>
 
+        {/* Pagination */}
         <div className="pagination">
           <button
             type="button"
@@ -379,75 +424,116 @@ function AdminDashboard() {
           </span>
           <button
             type="button"
-            onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+            onClick={() =>
+              setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+            }
             disabled={safePage === totalPages}
           >
             Next
           </button>
         </div>
+
+        {/* Empty State */}
         {filteredUsers.length === 0 && (
           <div className="empty-state">
             <p>No users match your filters.</p>
-            <button className="reset-btn" onClick={() => { setQuery(''); setRoleFilter('all'); }}>
+            <button
+              className="reset-btn"
+              onClick={() => {
+                setQuery('');
+                setRoleFilter('all');
+              }}
+            >
               Reset Filters
             </button>
           </div>
         )}
       </div>
 
+      {/* Audit Log */}
       <div className="audit-section">
         <div className="audit-header">
           <h2>Audit Log</h2>
           <p>Recent admin actions</p>
         </div>
         <div className="audit-list">
-          {auditLogs.map((log) => (
-            <div key={log._id} className="audit-item">
-              <div>
-                <p className="audit-action">{log.action.replace('user.', '').toUpperCase()}</p>
-                <p className="audit-meta">
-                  {log.actorEmail || 'Admin'} {log.targetEmail ? `→ ${log.targetEmail}` : ''}
-                </p>
+          {auditLogs.length > 0 ? (
+            auditLogs.map((log) => (
+              <div key={log._id} className="audit-item">
+                <div>
+                  <p className="audit-action">
+                    {log.action.replace('user.', '').toUpperCase()}
+                  </p>
+                  <p className="audit-meta">
+                    {log.actorEmail || 'Admin'}
+                    {log.targetEmail ? ` → ${log.targetEmail}` : ''}
+                  </p>
+                </div>
+                <span className="audit-time">
+                  {new Date(log.createdAt).toLocaleString()}
+                </span>
               </div>
-              <span className="audit-time">
-                {new Date(log.createdAt).toLocaleString()}
-              </span>
-            </div>
-          ))}
-          {auditLogs.length === 0 && <p className="audit-empty">No activity yet.</p>}
+            ))
+          ) : (
+            <p className="audit-empty">No activity yet.</p>
+          )}
         </div>
       </div>
 
+      {/* User Drawer */}
       {selectedUser && (
         <div className="drawer-overlay" onClick={closeUserDetails}>
           <aside className="drawer" onClick={(e) => e.stopPropagation()}>
             <div className="drawer-header">
               <div>
-                <h3>{selectedUser.name}</h3>
-                <p>{selectedUser.email}</p>
+                <h3>{selectedUser.name || 'Unknown User'}</h3>
+                <p>{selectedUser.email || '—'}</p>
               </div>
-              <button className="drawer-close" onClick={closeUserDetails}>Close</button>
+              <button className="drawer-close" onClick={closeUserDetails}>
+                Close
+              </button>
             </div>
+
             {detailsLoading ? (
-              <p>Loading details...</p>
+              <p style={{ color: 'var(--muted)' }}>Loading details...</p>
             ) : (
               <div className="drawer-body">
                 <div className="drawer-meta">
                   <span>{selectedUser.isAdmin ? 'Admin' : 'User'}</span>
-                  {selectedUser.isDisabled && <span className="drawer-badge">Disabled</span>}
-                  <span>Joined {new Date(selectedUser.createdAt).toLocaleDateString()}</span>
+                  {selectedUser.isDisabled && (
+                    <span className="drawer-badge">Disabled</span>
+                  )}
+                  <span>
+                    Joined{' '}
+                    {selectedUser.createdAt
+                      ? new Date(selectedUser.createdAt).toLocaleDateString()
+                      : '—'}
+                  </span>
                 </div>
+
                 <h4>Files</h4>
-                <ul className="drawer-files">
-                  {(selectedUser.files || []).slice(0, 10).map((file, idx) => (
-                    <li key={idx}>
-                      <span className="file-url">{file.url || 'Unknown file'}</span>
-                      <span className={`file-visibility ${file.visibility === 'public' ? 'public' : 'private'}`}>
-                        {file.visibility || 'private'}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
+                {(selectedUser.files || []).length === 0 ? (
+                  <p style={{ color: 'var(--muted)', fontSize: '13px' }}>
+                    No files uploaded.
+                  </p>
+                ) : (
+                  <ul className="drawer-files">
+                    {(selectedUser.files || []).slice(0, 10).map((file, idx) => (
+                      <li key={idx}>
+                        <span className="file-url">
+                          {file.url || 'Unknown file'}
+                        </span>
+                        <span
+                          className={`file-visibility ${
+                            file.visibility === 'public' ? 'public' : 'private'
+                          }`}
+                        >
+                          {file.visibility || 'private'}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
                 {(selectedUser.files || []).length > 10 && (
                   <p className="drawer-note">Showing first 10 files.</p>
                 )}
